@@ -4,22 +4,11 @@ from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
 
 
-''' TODO
-- compute velocity profile
-- sample along fitted spline every dt
-'''
-
-import numpy as np
-import math
-from scipy.interpolate import CubicSpline
-import matplotlib.pyplot as plt
-
-
 def sample_trajectory(x, y, bc_headings, v, dt):
     ''' Given x,y, control points, boundary condition headings, fixed velocity v,
         return a sampled C2 trajectory every time period dt
     '''
-    
+
     cx, cy = calc_c2_traj(x, y, bc_headings)
 
     total_length = 0
@@ -27,16 +16,19 @@ def sample_trajectory(x, y, bc_headings, v, dt):
         coeffs_x = np.flip(cx.c[:, i])
         coeffs_y = np.flip(cy.c[:, i])
         slen = calc_spline_length(coeffs_x, coeffs_y)
-        print(slen)
         total_length += slen
 
-    print('total len: ', total_length)
     nsteps = int(total_length/(dt*v))
     # tvec = np.arange(0, len(x)-1+dt, dt)
     tvec = np.linspace(0, len(x)-1, nsteps)
     xs = cx(tvec)
     ys = cy(tvec)
-    return xs, ys
+
+    # calc heading
+    dxs = cx(tvec, 1)
+    dys = cy(tvec, 1)
+    psi = np.arctan2(dys, dxs)
+    return xs, ys, psi
 
 
 def calc_c2_traj(x, y, bc_headings, eps=0.005):
@@ -200,7 +192,7 @@ if __name__ == "__main__":
     # test sampling
     v = 2.0
     dt = 0.1
-    xs, ys = sample_trajectory(x, y, bc_headings, v, dt)
+    xs, ys, psi = sample_trajectory(x, y, bc_headings, v, dt)
     plt.figure()
     plt.plot(xs, ys, 'o')
     plt.plot(x[0], y[0], 'ko')
@@ -211,7 +203,6 @@ if __name__ == "__main__":
     # Plot
     plot_trajectory(x, y, bch, cx, cy)
     # plt.show()
-
 
     # ## Test single spline segment case
     # xr = np.array([0,2])

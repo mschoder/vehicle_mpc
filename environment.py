@@ -6,8 +6,9 @@ import itertools
 from matplotlib import pyplot as plt
 from descartes import PolygonPatch
 
-from vehicle_mpc import trajectory_gen as tgen
-from vehicle_mpc import scenarios
+import trajectory_gen as tgen
+import scenarios
+
 
 class Environment:
     def __init__(self, obstacles, start, goal_region, bounds=None):
@@ -69,7 +70,8 @@ def plot_environment(env, bounds=None, figsize=None, margin=1.0):
     # obstacles
     for i, obs in enumerate(env.obstacles):
         poly = geom.Polygon(obs)
-        patch = PolygonPatch(poly, fc='orange', ec='black', alpha=0.5, zorder=20)
+        patch = PolygonPatch(poly, fc='orange', ec='black',
+                             alpha=0.5, zorder=20)
         ax.add_patch(patch)
 
     # start / goal
@@ -93,7 +95,7 @@ def plot_environment(env, bounds=None, figsize=None, margin=1.0):
 
 # Test
 if __name__ == '__main__':
-    
+
     scene = scenarios.two_obstacle
     control_pts = [(3, 0), (4.5, 1), (5, 2.8),
                    (3.5, 3.4), (2, 5.1), (3.7, 6.7), (5.5, 6.3)]
@@ -107,8 +109,9 @@ if __name__ == '__main__':
     v = 5
     dt = 0.1
     bc_headings = (np.pi/8, -np.pi/12)
-    xs, ys = tgen.sample_trajectory(xc, yc, bc_headings, v, dt)
+    xs, ys, psi = tgen.sample_trajectory(xc, yc, bc_headings, v, dt)
+    print(psi)
+    print(np.rad2deg(psi))
     ax.plot(xs, ys, 'ob', alpha=0.8, markersize=4, color='darkblue')
-   
 
     plt.show()
