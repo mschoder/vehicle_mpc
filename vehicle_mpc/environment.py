@@ -6,8 +6,8 @@ import itertools
 from matplotlib import pyplot as plt
 from descartes import PolygonPatch
 
-from trajectory_gen import sample_trajectory
-import scenarios
+from vehicle_mpc import trajectory_gen as tgen
+from vehicle_mpc import scenarios
 
 class Environment:
     def __init__(self, obstacles, start, goal_region, bounds=None):
@@ -107,7 +107,7 @@ if __name__ == '__main__':
     v = 5
     dt = 0.1
     bc_headings = (np.pi/8, -np.pi/12)
-    xs, ys = sample_trajectory(xc, yc, bc_headings, v, dt)
+    xs, ys = tgen.sample_trajectory(xc, yc, bc_headings, v, dt)
     ax.plot(xs, ys, 'ob', alpha=0.8, markersize=4, color='darkblue')
    
 
