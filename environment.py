@@ -6,8 +6,8 @@ import itertools
 from matplotlib import pyplot as plt
 from descartes import PolygonPatch
 
-import trajectory_gen as tgen
-import scenarios
+from vehicle_mpc import trajectory_gen as tgen
+from vehicle_mpc import scenarios
 
 
 class Environment:
