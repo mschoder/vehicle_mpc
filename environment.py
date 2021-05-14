@@ -92,6 +92,47 @@ def plot_environment(env, bounds=None, figsize=None, margin=1.0):
     ax.set_aspect('equal', adjustable='box')
     return ax
 
+    # Helpers for obstacle constraint handling
+
+    def centroid(obstacle):
+        ''' 
+        Averages all vertices in a given obstacle. Average of x's and y's is
+        guaranteed to lie inside polygon
+        '''
+        x_avg = sum([v[0] for v in obstacle])/len(obstacle)
+        y_avg = sum([v[1] for v in obstacle])/len(obstacle)
+        return (x_avg, y_avg)
+
+    def linear_obstacle_constraints(obs):
+        '''
+        Given polygonal obstsacle, returns a list of values for a, b, c
+        Constraints take form: cy <= ax + b - buffer + Mz
+        Assumes obstacles are given as consecutive ordered list of vertices
+        '''
+        centroid = centroid(obstacle)
+        for i, v in enumerate(obs):
+            v1 = obs[i]
+            # get next vertex; loop back to first for last constraint
+            v2 = obs[(i+1) % len(obs)]
+            dx = v2[0] - v1[0]
+            dy = v2[1] - v1[1]
+
+            if dx == 0:     # vertical constaint case; x <= b
+                c = 0
+                if centroid[0] <= v1[0]:  # flip constraint
+                    a, b, c = 1, -v1[0], 0
+                else:
+                    a, b, c = -1, v1[0], 0
+
+            else:           # non-vertical constraint; cy <= ax + b
+                a = dy / dx
+                b = v1[1] - a * v1[0]
+                if centroid[1] < a * centroid[0] + b:  # flip constraint
+                    a, b, c = -1, -1, -1
+                else:
+                    a, b, c = 1, 1, 1
+            return a, b, c
+
 
 # Test
 if __name__ == '__main__':
