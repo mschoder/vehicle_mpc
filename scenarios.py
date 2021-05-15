@@ -1,3 +1,19 @@
+import numpy as np
+
+def gen_ellipse(h,k,a,b,theta):
+    '''
+    (h,k) = xy coord of center
+    (a,b) = major, minor axes
+    theta = angle of rotation in degrees
+    '''
+
+two_ellipse = {'start': (0,0),
+               'goal': [(12,8), (12,9), (13,9), (13,8)],
+               'obs_list': [[5.5, 2.0, 4.5, 1.5, -35],
+                            [8, 7, 4.2, 2.0, 65]]
+               }
+
+
 one_obstacle = {'start': (0, 0),
                 'goal': [(5.9, 6.1), (5.9, 7.1), (6.9, 7.1), (6.9, 6.1)],
                 'obs_list': [[(3, 2), (2, 6), (4, 5), (6, 3)]]
@@ -26,3 +42,4 @@ five_obstacle = {'start': (0, 0),
                               [(11, 4), (14, 5), (8, 11), (6, 9)],
                               [(5, 10), (7, 11), (8, 14), (4, 13)]],
                  }
+

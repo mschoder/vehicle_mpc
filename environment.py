@@ -4,6 +4,7 @@ import shapely.geometry as geom
 from shapely import affinity
 import itertools
 from matplotlib import pyplot as plt
+from matplotlib import patches
 from descartes import PolygonPatch
 
 
@@ -42,6 +43,31 @@ class Environment:
             points += self.control_points
         mp = geom.MultiPoint(points)
         self.bounds = mp.bounds
+
+def plot_ellipse_environment(scene, bounds, figsize):
+    '''
+    scene - dict from scenarios
+    bounds - [[minx, maxx], [miny, maxy]]
+    '''
+    fig = plt.figure(figsize=figsize)
+    ax = fig.add_subplot(111)
+
+    for obs in scene['obs_list']:
+        h,k,a,b,theta = obs
+        ellipse = patches.Ellipse((h,k), a, b, theta, fc='orange', ec='k', alpha=0.5, zorder=5)
+        ax.add_patch(ellipse)
+    # start / goal
+    goal_poly = geom.Polygon(scene['goal'])
+    ax.add_patch(PolygonPatch(goal_poly, fc='green',
+                 ec='green', alpha=0.5, zorder=1))
+    start = geom.Point(scene['start']).buffer(0.2, resolution=3)
+    ax.add_patch(PolygonPatch(start, fc='red',
+                 ec='black', alpha=0.7, zorder=1))
+    plt.xlim(bounds[0])
+    plt.ylim(bounds[1])
+    ax.set_aspect('equal', adjustable='box')
+    return ax
+
 
 
 def plot_environment(env, bounds=None, figsize=None, margin=1.0):
@@ -97,7 +123,6 @@ def centroid(obstacle):
     Averages all vertices in a given obstacle. Average of x's and y's is
     guaranteed to lie inside polygon
     '''
-    print(obstacle)
     x_avg = sum([v[0] for v in obstacle])/len(obstacle)
     y_avg = sum([v[1] for v in obstacle])/len(obstacle)
     return (x_avg, y_avg)
@@ -139,26 +164,37 @@ def linear_obstacle_constraints(obs):
 # Test
 if __name__ == '__main__':
 
-    import trajectory_gen as tgen
     import scenarios
 
-    scene = scenarios.two_obstacle
-    control_pts = [(3, 0), (4.5, 1), (5, 2.8),
-                   (3.5, 3.4), (2, 5.1), (3.7, 6.7), (5.5, 6.3)]
-    env = Environment(scene['obs_list'],
-                      scene['start'], scene['goal'])
-    env.add_control_points(control_pts)
-    ax = plot_environment(env)
-
-    xc = [p[0] for p in control_pts]
-    yc = [p[1] for p in control_pts]
-    v = 5
-    dt = 0.1
-    bc_headings = (np.pi/8, -np.pi/12)
-    xs, ys, psi = tgen.sample_trajectory(xc, yc, bc_headings, v, dt)
-
-    constraints = linear_obstacle_constraints(env.obstacles[0])
-    print(constraints)
-    ax.plot(xs, ys, 'ob', alpha=0.8, markersize=4, color='darkblue')
-
+    scene = scenarios.two_ellipse
+    print(scene)
+    ax = plot_ellipse_environment(scene, [[-1,15], [-1, 10]], (12,8))
+    ax.plot([1],[2], 'ro')
     plt.show()
+
+
+    # import trajectory_gen as tgen
+    # import scenarios
+
+    # scene = scenarios.two_obstacle
+    # control_pts = [(3, 0), (4.5, 1), (5, 2.8),
+    #                (3.5, 3.4), (2, 5.1), (3.7, 6.7), (5.5, 6.3)]
+    # env = Environment(scene['obs_list'],
+    #                   scene['start'], scene['goal'])
+    # env.add_control_points(control_pts)
+    # ax = plot_environment(env)
+
+    # xc = [p[0] for p in control_pts]
+    # yc = [p[1] for p in control_pts]
+    # v = 5
+    # dt = 0.1
+    # bc_headings = (np.pi/8, -np.pi/12)
+    # xs, ys, psi = tgen.sample_trajectory(xc, yc, bc_headings, v, dt)
+
+    # constraints = linear_obstacle_constraints(env.obstacles[0])
+    # print(constraints)
+    # ax.plot(xs, ys, 'ob', alpha=0.8, markersize=4, color='darkblue')
+
+    # plt.show()
+
+

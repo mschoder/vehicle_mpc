@@ -199,6 +199,7 @@ if __name__ == "__main__":
     plt.plot(x[-1], y[-1], 'ko')
     plt.axis('equal')
     plt.show()
+    
 
     # Plot
     plot_trajectory(x, y, bch, cx, cy)
