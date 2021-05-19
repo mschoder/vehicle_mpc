@@ -13,7 +13,7 @@ import trajectory_gen
 n_x = 5
 n_u = 2
 buffer = 0.3
-Q = np.diag([1, 1, .05, .1, .1])
+Q = np.diag([1, 1, .05, .1, 0])
 R = np.diag([.1, .01])
 Q_slack = 10
 bounds = {
