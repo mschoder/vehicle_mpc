@@ -4,11 +4,12 @@ from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
 
 
-def sample_trajectory(x, y, bc_headings, v, dt):
-    ''' Given x,y, control points, boundary condition headings, fixed velocity v,
+def sample_trajectory(ctrl_pts, bc_headings, v, dt):
+    ''' Given control points [(x,y)], boundary condition headings, fixed velocity v,
         return a sampled C2 trajectory every time period dt
     '''
-
+    x = [p[0] for p in ctrl_pts]
+    y = [p[1] for p in ctrl_pts]
     cx, cy = calc_c2_traj(x, y, bc_headings)
 
     total_length = 0
@@ -49,7 +50,6 @@ def calc_c2_traj(x, y, bc_headings, eps=0.005):
 
         slen_start_new = calc_spline_length(coeffs_x_start, coeffs_y_start)
         slen_end_new = calc_spline_length(coeffs_x_end, coeffs_y_end)
-#         print(slen_start_new, slen_end_new)
 
         if abs(slen_start_new - slen_start) < eps and abs(slen_end_new - slen_end) < eps:
             break
@@ -199,7 +199,6 @@ if __name__ == "__main__":
     plt.plot(x[-1], y[-1], 'ko')
     plt.axis('equal')
     plt.show()
-    
 
     # Plot
     plot_trajectory(x, y, bch, cx, cy)

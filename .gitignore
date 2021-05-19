@@ -1,1 +1,6 @@
 __pycache__*
+*.ipynb
+.ipynb_checkpoints
+.python-version
+gurobi.log
+jupyter_setup.py

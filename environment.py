@@ -44,6 +44,7 @@ class Environment:
         mp = geom.MultiPoint(points)
         self.bounds = mp.bounds
 
+
 def plot_ellipse_environment(scene, bounds, figsize):
     '''
     scene - dict from scenarios
@@ -53,8 +54,9 @@ def plot_ellipse_environment(scene, bounds, figsize):
     ax = fig.add_subplot(111)
 
     for obs in scene['obs_list']:
-        h,k,a,b,theta = obs
-        ellipse = patches.Ellipse((h,k), a, b, theta, fc='orange', ec='k', alpha=0.5, zorder=5)
+        h, k, a, b, theta = obs
+        ellipse = patches.Ellipse(
+            (h, k), a, b, theta, fc='orange', ec='k', alpha=0.5, zorder=5)
         ax.add_patch(ellipse)
     # start / goal
     goal_poly = geom.Polygon(scene['goal'])
@@ -67,7 +69,6 @@ def plot_ellipse_environment(scene, bounds, figsize):
     plt.ylim(bounds[1])
     ax.set_aspect('equal', adjustable='box')
     return ax
-
 
 
 def plot_environment(env, bounds=None, figsize=None, margin=1.0):
@@ -106,14 +107,14 @@ def plot_environment(env, bounds=None, figsize=None, margin=1.0):
                  ec='black', alpha=0.7, zorder=1))
 
     # control points
-    for pt in env.control_points:
-        ax.add_patch(PolygonPatch(geom.Point(pt).buffer(
-            0.1, resolution=3), fc='black', ec='black', alpha=1, zorder=1))
+    cx = [c[0] for c in env.control_points]
+    cy = [c[1] for c in env.control_points]
+    ax.plot(cx, cy, 'ko', markersize=8, alpha=0.8, label='control points')
 
     plt.xlim([minx, maxx])
     plt.ylim([miny, maxy])
     ax.set_aspect('equal', adjustable='box')
-    return ax
+    return f, ax
 
 # Helpers for obstacle constraint handling
 
@@ -128,7 +129,7 @@ def centroid(obstacle):
     return (x_avg, y_avg)
 
 
-def linear_obstacle_constraints(obs):
+def linear_obstacle_constraints(obs, buffer):
     '''
     Given polygonal obstsacle, returns a list of values for a, b, c
     Constraints take form: cy <= ax + b - buffer + Mz
@@ -143,22 +144,31 @@ def linear_obstacle_constraints(obs):
         dx = v2[0] - v1[0]
         dy = v2[1] - v1[1]
 
-        if dx == 0:     # vertical constaint case; x <= b
+        if dx == 0:     # vertical constaint case; cy <= ax + b --> x <= b
             c = 0
             if cent[0] <= v1[0]:  # flip constraint
-                a, b, c = 1, -v1[0], 0
+                a, b, c = 1, -v1[0] - buffer, 0
+
             else:
-                a, b, c = -1, v1[0], 0
+                a, b, c = -1, v1[0] - buffer, 0
 
         else:           # non-vertical constraint; cy <= ax + b
             a = dy / dx
             b = v1[1] - a * v1[0]
             if cent[1] < a * cent[0] + b:  # flip constraint
-                a, b, c = -1, -1, -1
+                a, b, c = -a, -b, -1
+                a, b, c = calc_offset_coefs((a, b, c), buffer)
             else:
-                a, b, c = 1, 1, 1
+                a, b, c = a, b, 1
+                a, b, c = calc_offset_coefs((a, b, c), buffer)
         constraints.append((a, b, c))
     return constraints
+
+
+def calc_offset_coefs(coefs, offset):
+    a, b, c = coefs
+    b_new = b - offset*np.sqrt(a**2+1)
+    return a, b_new, c
 
 
 # Test
@@ -168,10 +178,9 @@ if __name__ == '__main__':
 
     scene = scenarios.two_ellipse
     print(scene)
-    ax = plot_ellipse_environment(scene, [[-1,15], [-1, 10]], (12,8))
-    ax.plot([1],[2], 'ro')
+    ax = plot_ellipse_environment(scene, [[-1, 15], [-1, 10]], (12, 8))
+    ax.plot([1], [2], 'ro')
     plt.show()
-
 
     # import trajectory_gen as tgen
     # import scenarios
@@ -196,5 +205,3 @@ if __name__ == '__main__':
     # ax.plot(xs, ys, 'ob', alpha=0.8, markersize=4, color='darkblue')
 
     # plt.show()
-
-
